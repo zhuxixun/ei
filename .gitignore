@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 虚拟环境
+.venv/
+venv/
+
+# 训练产出（模型、视频、日志）
+outputs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# 第三方源码（LeRobot 从 GitHub 安装，不纳入版本控制）
+src/lerobot/
+
+# 临时文件
+*.tar.gz
+*.tmp
