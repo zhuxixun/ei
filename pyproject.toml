@@ -1,0 +1,25 @@
+[project]
+name = "ei"
+version = "0.1.0"
+description = "MuJoCo / LeRobot 机器人学习实践项目（PPO + Diffusion Policy）"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "gymnasium[mujoco]",
+    "imageio",
+    "imageio-ffmpeg",
+    "lerobot[pusht,diffusion]",
+    "moviepy",
+    "mujoco",
+    "rich",
+    "stable-baselines3",
+    "tqdm",
+]
+
+[tool.uv]
+# 本项目是脚本集合（非可安装包），不构建自身
+package = false
+
+# LeRobot 从本地源码安装（GitHub main 分支，见 setup.sh / README）
+[tool.uv.sources]
+lerobot = { path = "src/lerobot" }

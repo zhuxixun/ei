@@ -35,7 +35,7 @@ cd ei
 ### 第 2 步：一键安装环境
 
 ```bash
-# 普通环境（自动安装 uv → 创建 venv → 装 MuJoCo/SB3/LeRobot）
+# 普通环境（自动安装 uv → 按 pyproject.toml + uv.lock 同步依赖）
 bash setup.sh
 
 # 中国大陆网络环境（使用清华 PyPI 镜像，更快更稳）
@@ -121,7 +121,10 @@ done
 
 ```
 ei/
-├── setup.sh                 # 一键环境安装脚本
+├── setup.sh                 # 一键环境安装脚本（uv sync）
+├── pyproject.toml           # 项目声明 + 依赖清单（uv 项目管理）
+├── uv.lock                  # 依赖锁定文件（版本 / 哈希，建议提交）
+├── .python-version          # Python 版本声明（3.12）
 ├── verify_env.py            # 环境体检脚本
 ├── 01_ppo_mujoco.py         # RL：PPO 训练 HalfCheetah + 录视频
 ├── 02_lerobot_pusht.py      # 模仿学习：Diffusion Policy 训练 PushT + 评估
@@ -167,21 +170,31 @@ git add -A && git commit -m "描述改动" && git push
 不想用 `setup.sh` 的话，手动执行等价命令：
 
 ```bash
-# 1. 创建 Python 3.12 虚拟环境（需要先安装 uv: curl -LsSf https://astral.sh/uv/install.sh | sh）
-uv venv .venv --python 3.12
-source .venv/bin/activate
-
-# 2. 基础依赖（中国大陆可加 --index-url https://pypi.tuna.tsinghua.edu.cn/simple）
-uv pip install mujoco "gymnasium[mujoco]" stable-baselines3 tqdm rich moviepy imageio imageio-ffmpeg
-
-# 3. LeRobot（源码安装，main 分支才有最新 API）
+# 1. 获取 LeRobot 源码（main 分支才有最新 API）
 mkdir -p src
 curl -sL -o /tmp/lerobot.tar.gz https://github.com/huggingface/lerobot/archive/refs/heads/main.tar.gz
 tar xzf /tmp/lerobot.tar.gz -C src && mv src/lerobot-main src/lerobot && rm /tmp/lerobot.tar.gz
-uv pip install "./src/lerobot[pusht,diffusion]"
+
+# 2. 按 pyproject.toml 同步依赖（需要先安装 uv: curl -LsSf https://astral.sh/uv/install.sh | sh）
+#    自动创建 .venv（Python 3.12 来自 .python-version），并生成/使用 uv.lock
+uv sync
+source .venv/bin/activate
+
+# 中国大陆网络：走清华镜像（安装完会还原 uv.lock 的官方源记录）
+UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple uv sync
+```
+
+日常开发常用命令：
+
+```bash
+uv add <包名>          # 添加新依赖（自动更新 pyproject.toml + uv.lock）
+uv remove <包名>       # 移除依赖
+uv sync                # 按锁文件同步环境（改完依赖后执行）
+uv lock                # 重新解析依赖并更新 uv.lock
 ```
 
 > ⚠️ 注意：LeRobot 必须装 GitHub main 分支（PyPI 上的 0.2.x 是 2024 年的旧版，API 已完全不一样）。
+> 本项目把 LeRobot 声明为本地路径依赖（见 `pyproject.toml` 的 `[tool.uv.sources]`），`src/lerobot` 已 gitignore，每次全新克隆后需先执行上面的下载步骤。
 
 ## 🧭 下一步学习路径
 
